@@ -10,15 +10,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Supermercado {
-	int numCajas;
-	Semaphore semaforo;
-	boolean cajasLibres[];
-	ReentrantLock cerrojo = new ReentrantLock(true);
+	private int numCajas;
+	private Semaphore semaforo;
+	private boolean cajasLibres[];
+	private ReentrantLock cerrojo = new ReentrantLock(true);
 
 	public Supermercado(int numCajas) {
 		this.numCajas = numCajas;
 		semaforo = new Semaphore(numCajas, true);
-
 		cajasLibres = new boolean[numCajas];
 		for (int i = 0; i < numCajas; i++) {
 			cajasLibres[i] = true;
@@ -26,6 +25,7 @@ public class Supermercado {
 	}
 
 	public void entrar() throws InterruptedException {
+		comprar();
 		semaforo.acquire();
 		try {
 			System.out.printf("El cliente %s ha llegado a la zona de cajeros a las %s \n",
@@ -33,7 +33,7 @@ public class Supermercado {
 					DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).format(LocalTime.now()));
 			int caja = seleccionarCaja();
 			if (caja >= 0) {
-				comprar(caja);
+				pagar(caja);
 				terminarDeComprar(caja);
 			}
 
@@ -44,6 +44,13 @@ public class Supermercado {
 
 	}
 
+	private void comprar() throws InterruptedException {
+		TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3) + 1);
+		System.out.printf("El cliente %s esta comprando a las %s \n",
+				Thread.currentThread().getName(),
+				DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).format(LocalTime.now()));
+	}
+
 	private int seleccionarCaja() {
 		cerrojo.lock();
 		try {
@@ -51,7 +58,6 @@ public class Supermercado {
 
 				if (cajasLibres[i]) {
 					cajasLibres[i] = false;
-
 					return i;
 				}
 			}
@@ -63,20 +69,17 @@ public class Supermercado {
 	}
 
 	private void terminarDeComprar(int caja) throws InterruptedException {
-		TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(4) + 1);
-
 		cajasLibres[caja] = true;
 		System.out.printf("El cliente %s esta saliendo de la caja %d a las %s \n", Thread.currentThread().getName(),
 				caja + 1, DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).format(LocalTime.now()));
 
 	}
 
-	private void comprar(int caja) throws InterruptedException {
-
+	private void pagar(int caja) throws InterruptedException {
+		TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(4) + 1);
 		System.out.printf("El cliente %s esta siendo atendido en la caja %d a las %s \n",
 				Thread.currentThread().getName(), caja + 1,
 				DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).format(LocalTime.now()));
-		TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(3) + 1);
 	}
 
 }

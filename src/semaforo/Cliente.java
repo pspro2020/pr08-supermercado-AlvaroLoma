@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 public class Cliente implements Runnable {
-	Supermercado supermercado;
+	private Supermercado supermercado;
 
 	public Cliente(Supermercado supermercado) {
 
@@ -18,11 +18,12 @@ public class Cliente implements Runnable {
 		try {
 			System.out.printf("El cliente %s ha llegado al supermercado a las %s \n", Thread.currentThread().getName(),
 					DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).format(LocalTime.now()));
+			
 			supermercado.entrar();
 
 		} catch (InterruptedException e) {
 
-			e.printStackTrace();
+			return;
 		}
 		meVoyDelSuper();
 
